@@ -5,7 +5,11 @@ const Groq = require('groq-sdk');
 const Rephrase = require('./models/Rephrase'); // Imported Rephrase instead of Article
 
 const app = express();
-app.use(cors());
+app.use(cors({
+  origin: 'https://reverb-frontend.vercel.app', // Your Vercel URL (no slash at the end!)
+  methods: ['GET', 'POST', 'DELETE'],
+  credentials: true
+}));
 app.use(express.json());
 
 // Initialize Groq Client
@@ -89,4 +93,5 @@ app.delete('/history/:id', async (req, res) => {
     res.status(500).json({ message: 'Delete failed' });
   }
 });
+
 app.listen(PORT, () => console.log(`Reverb AI Server running on port ${PORT}`));
