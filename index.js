@@ -7,8 +7,8 @@ const Rephrase = require('./models/Rephrase');
 
 const app = express();
 app.use(cors({
-  origin: 'https://reverbwithsujal.vercel.app', // <-- Your new URL goes here!
-  methods: ['GET', 'POST', 'DELETE'],
+  origin: 'https://reverbwithsujal.vercel.app', // <-- This is your new VIP pass
+  methods: ['GET', 'POST', 'DELETE', 'OPTIONS', 'PUT', 'PATCH'],
   credentials: true
 }));
 app.use(express.json());
@@ -94,4 +94,5 @@ app.delete('/history/:id', requireAuth(), async (req, res) => {
 
 const PORT = 5000;
 app.listen(PORT, () => console.log(`Reverb AI Server running on port ${PORT}`));
+
 
