@@ -8,7 +8,7 @@ const app = express();
 
 // FIXED 1: Removed the trailing slash at the end of the Vercel URL
 app.use(cors({
-  origin: 'https://reverb-frontend-ercy.vercel.app', 
+  origin: 'https://reverbwithsujal.vercel.app', 
   methods: ['GET', 'POST', 'DELETE'],
   credentials: true
 }));
@@ -102,6 +102,7 @@ const PORT = process.env.PORT || 5000;
 app.listen(PORT, '0.0.0.0', () => {
     console.log(`Reverb AI Server running on port ${PORT}`);
 });
+
 
 
 
