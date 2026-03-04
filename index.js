@@ -83,7 +83,12 @@ app.post('/rephrase', async (req, res) => {
   }
 });
 
-const PORT = 5000;
+// REPLACE your 'const PORT = 5000;' with these lines:
+const PORT = process.env.PORT || 5000;
+
+app.listen(PORT, '0.0.0.0', () => {
+    console.log(`Reverb AI Server running on port ${PORT}`);
+});
 // DELETE /history/:id - Delete a rephrase entry
 app.delete('/history/:id', async (req, res) => {
   try {
@@ -95,4 +100,5 @@ app.delete('/history/:id', async (req, res) => {
 });
 
 app.listen(PORT, () => console.log(`Reverb AI Server running on port ${PORT}`));
+
 
