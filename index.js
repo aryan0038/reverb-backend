@@ -85,9 +85,8 @@ app.post('/rephrase', async (req, res) => {
 
 const PORT = process.env.PORT || 5000;
 
-// Adding '0.0.0.0' tells Railway to listen to external requests, not just local ones
-app.listen(PORT, '0.0.0.0', () => {
-    console.log(`Reverb AI is alive on port ${PORT}`);
+app.listen(PORT, () => {
+    console.log(`Reverb AI Server running on port ${PORT}`);
 });
 // DELETE /history/:id - Delete a rephrase entry
 app.delete('/history/:id', async (req, res) => {
@@ -100,6 +99,7 @@ app.delete('/history/:id', async (req, res) => {
 });
 
 app.listen(PORT, () => console.log(`Reverb AI Server running on port ${PORT}`));
+
 
 
 
