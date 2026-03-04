@@ -2,14 +2,17 @@ const express = require('express');
 const mongoose = require('mongoose');
 const cors = require('cors');
 const Groq = require('groq-sdk');
-const Rephrase = require('./models/Rephrase'); // Imported Rephrase instead of Article
+const Rephrase = require('./models/Rephrase'); 
 
 const app = express();
+
+// FIXED 1: Removed the trailing slash at the end of the Vercel URL
 app.use(cors({
-  origin: 'https://reverb-frontend-ercy.vercel.app/', // Your Vercel URL (no slash at the end!)
+  origin: 'https://reverb-frontend-ercy.vercel.app', 
   methods: ['GET', 'POST', 'DELETE'],
   credentials: true
 }));
+
 app.use(express.json());
 
 // Initialize Groq Client
@@ -38,7 +41,7 @@ async function performRephrase(originalText, tone) {
           content: originalText
         }
       ],
-      model: "llama-3.3-70b-versatile", // Using the 70B versatile model
+      model: "llama-3.3-70b-versatile", 
     });
     return chatCompletion.choices[0]?.message?.content || "Could not rephrase text.";
   } catch (error) {
@@ -83,12 +86,7 @@ app.post('/rephrase', async (req, res) => {
   }
 });
 
-const PORT = process.env.PORT || 5000;
-
-app.listen(PORT, () => {
-    console.log(`Reverb AI Server running on port ${PORT}`);
-});
-// DELETE /history/:id - Delete a rephrase entry
+// FIXED 2: Moved DELETE route up here where it belongs
 app.delete('/history/:id', async (req, res) => {
   try {
     await Rephrase.findByIdAndDelete(req.params.id);
@@ -98,7 +96,13 @@ app.delete('/history/:id', async (req, res) => {
   }
 });
 
-app.listen(PORT, () => console.log(`Reverb AI Server running on port ${PORT}`));
+// FIXED 3: Only ONE listen command at the very bottom
+const PORT = process.env.PORT || 5000;
+
+app.listen(PORT, '0.0.0.0', () => {
+    console.log(`Reverb AI Server running on port ${PORT}`);
+});
+
 
 
 
