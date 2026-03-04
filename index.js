@@ -2,32 +2,26 @@ const express = require('express');
 const mongoose = require('mongoose');
 const cors = require('cors');
 const Groq = require('groq-sdk');
-const Rephrase = require('./models/Rephrase'); 
+const { clerkMiddleware, requireAuth } = require('@clerk/express');
+const Rephrase = require('./models/Rephrase');
 
 const app = express();
-
-// FIXED 1: Removed the trailing slash at the end of the Vercel URL
 app.use(cors({
   origin: ['https://reverbwithsujal.vercel.app', 'http://localhost:5173', 'http://localhost:5177'],
   methods: ['GET', 'POST', 'DELETE'],
   credentials: true
 }));
-
 app.use(express.json());
+app.use(clerkMiddleware());
 
-// Initialize Groq Client
 const groq = new Groq({ apiKey: process.env.GROQ_API_KEY });
 
-// Updated Connection String
 const MONGO_URI = process.env.MONGO_URI || 'mongodb://database:27017/reverbai';
 
 mongoose.connect(MONGO_URI)
   .then(() => console.log("Connected to ReverbAI Database"))
   .catch(err => console.error("Database connection error:", err));
 
-/**
- * Helper: Call Groq AI to rephrase text
- */
 async function performRephrase(originalText, tone) {
   try {
     const chatCompletion = await groq.chat.completions.create({
@@ -41,7 +35,7 @@ async function performRephrase(originalText, tone) {
           content: originalText
         }
       ],
-      model: "llama-3.3-70b-versatile", 
+      model: "llama-3.3-70b-versatile",
     });
     return chatCompletion.choices[0]?.message?.content || "Could not rephrase text.";
   } catch (error) {
@@ -50,32 +44,33 @@ async function performRephrase(originalText, tone) {
   }
 }
 
-// GET /history - Returns all past rephrasings sorted by newest
-app.get('/history', async (req, res) => {
+// GET /history - Returns history for the logged-in user only
+app.get('/history', requireAuth(), async (req, res) => {
   try {
-    const history = await Rephrase.find().sort({ createdAt: -1 });
+    const userId = req.auth.userId;
+    const history = await Rephrase.find({ userId }).sort({ createdAt: -1 });
     res.json(history);
   } catch (error) {
     res.status(500).json({ message: "Error fetching history" });
   }
 });
 
-// POST /rephrase - Main rephrasing logic
-app.post('/rephrase', async (req, res) => {
+// POST /rephrase - Saves rephrase linked to logged-in user
+app.post('/rephrase', requireAuth(), async (req, res) => {
   const { originalText, tone } = req.body;
+  const userId = req.auth.userId;
 
   if (!originalText || !tone) {
     return res.status(400).json({ message: "Missing text or tone" });
   }
 
-  // 1. Get the rephrased version from Groq
   const rephrasedText = await performRephrase(originalText, tone);
 
-  // 2. Save to MongoDB
   const newEntry = new Rephrase({
     originalText,
     rephrasedText,
-    tone
+    tone,
+    userId
   });
 
   try {
@@ -86,26 +81,16 @@ app.post('/rephrase', async (req, res) => {
   }
 });
 
-// FIXED 2: Moved DELETE route up here where it belongs
-app.delete('/history/:id', async (req, res) => {
+// DELETE /history/:id - Only delete if it belongs to the logged-in user
+app.delete('/history/:id', requireAuth(), async (req, res) => {
   try {
-    await Rephrase.findByIdAndDelete(req.params.id);
+    const userId = req.auth.userId;
+    await Rephrase.findOneAndDelete({ _id: req.params.id, userId });
     res.status(200).json({ message: 'Deleted successfully' });
   } catch (error) {
     res.status(500).json({ message: 'Delete failed' });
   }
 });
 
-// FIXED 3: Only ONE listen command at the very bottom
-const PORT = process.env.PORT || 5000;
-
-app.listen(PORT, '0.0.0.0', () => {
-    console.log(`Reverb AI Server running on port ${PORT}`);
-});
-
-
-
-
-
-
-
+const PORT = 5000;
+app.listen(PORT, () => console.log(`Reverb AI Server running on port ${PORT}`));
