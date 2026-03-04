@@ -20,6 +20,11 @@ const RephraseSchema = new mongoose.Schema({
     default: 'formal',
     required: true
   },
+  userId: {
+    type: String,
+    required: true,
+    index: true
+  },
   createdAt: {
     type: Date,
     default: Date.now
