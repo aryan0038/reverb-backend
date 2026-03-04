@@ -6,7 +6,7 @@ const Rephrase = require('./models/Rephrase'); // Imported Rephrase instead of A
 
 const app = express();
 app.use(cors({
-  origin: 'https://reverb-frontend.vercel.app', // Your Vercel URL (no slash at the end!)
+  origin: 'https://reverb-frontend-ercy.vercel.app/', // Your Vercel URL (no slash at the end!)
   methods: ['GET', 'POST', 'DELETE'],
   credentials: true
 }));
@@ -95,3 +95,4 @@ app.delete('/history/:id', async (req, res) => {
 });
 
 app.listen(PORT, () => console.log(`Reverb AI Server running on port ${PORT}`));
+
