@@ -6,12 +6,19 @@ const { clerkMiddleware, requireAuth } = require('@clerk/express');
 const Rephrase = require('./models/Rephrase');
 
 const app = express();
+
+// 1️⃣ CORS MUST GO FIRST! (This allows the Clerk Authorization token through)
 app.use(cors({
-  origin: 'https://reverbwithsujal.vercel.app', // <-- This is your new VIP pass
+  origin: 'https://reverbwithsujal.vercel.app', 
   methods: ['GET', 'POST', 'DELETE', 'OPTIONS', 'PUT', 'PATCH'],
+  allowedHeaders: ['Content-Type', 'Authorization'], // <-- THE MAGIC FIX!
   credentials: true
 }));
+
+// 2️⃣ Body parser
 app.use(express.json());
+
+// 3️⃣ Clerk Middleware
 app.use(clerkMiddleware());
 
 const groq = new Groq({ apiKey: process.env.GROQ_API_KEY });
@@ -92,7 +99,6 @@ app.delete('/history/:id', requireAuth(), async (req, res) => {
   }
 });
 
-const PORT = 5000;
-app.listen(PORT, () => console.log(`Reverb AI Server running on port ${PORT}`));
-
-
+// 4️⃣ RAILWAY PORT FIX
+const PORT = process.env.PORT || 5000;
+app.listen(PORT, '0.0.0.0', () => console.log(`Reverb AI Server running on port ${PORT}`));
